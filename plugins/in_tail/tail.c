@@ -326,15 +326,17 @@ int in_tail_collect_event(void *file, struct flb_config *config)
         return 0;
     }
 
-    ret = flb_tail_file_chunk(f);
-    switch (ret) {
-    case FLB_TAIL_ERROR:
-        /* Could not longer read the file */
-        flb_tail_file_remove(f);
-        break;
-    case FLB_TAIL_OK:
-    case FLB_TAIL_WAIT:
-        break;
+    while (f->offset < st.st_size) {
+        ret = flb_tail_file_chunk(f);
+        switch (ret) {
+        case FLB_TAIL_ERROR:
+            /* Could not longer read the file */
+            flb_tail_file_remove(f);
+            return 0;
+        case FLB_TAIL_OK:
+        case FLB_TAIL_WAIT:
+            break;
+        }
     }
 
     return 0;
